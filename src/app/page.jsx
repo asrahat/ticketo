@@ -1,11 +1,20 @@
+import Hero from "@/components/Hero";
+import Statistics from "@/components/Statistics";
+import Testimonials from "@/components/Testimonials";
+import WhyChoose from "@/components/WhyChoose";
 
 export default async function HomePage() {
-
-
+  const stats = {
+    totalEvents: 100,
+    totalAttendees: 1000,
+    totalOrg: 100,
+  }
   return (
     <div>
-      Welcome to Ticketo.
+      <Hero></Hero>
+      <WhyChoose></WhyChoose>
+      <Statistics stats={stats}></Statistics>
+      <Testimonials></Testimonials>
     </div>
   );
 }
-
