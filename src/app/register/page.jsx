@@ -22,6 +22,9 @@ import { FaUser, FaEnvelope, FaLock, FaImage, FaGoogle } from "react-icons/fa";
 import Logo from "@/components/Logo";
 import { useForm } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
+import { redirect } from "next/navigation";
+import toast from "react-hot-toast";
+import { uploadImage } from "@/utils/uploadImage";
 
 export default function RegisterPage() {
   const {
@@ -30,13 +33,35 @@ export default function RegisterPage() {
     watch,
     formState: { errors },
   } = useForm();
-  const onSubmit = async(data) => {
-    // console.log("Submitted", data);
-    const{data: signUpData, error:signUpError} = await authClient.signUp.email({
-        ...data
-    })
-    console.log(data, signUpData);
-  };
+  const onSubmit = async (data) => {
+        // Upload image to imgbb
+        console.log(data);
+
+        const imageFile = data.image[0];
+        const imageUrl = await uploadImage(imageFile)
+        // console.log(imageUrl);
+
+
+        const { data: signUpData, error: signUpError } = await authClient.signUp.email({
+            email: data.email,
+            password: data.password,
+            name: data.name,
+            image: imageUrl,
+            role: data.role
+        })
+
+        // console.log(signUpData, signUpError);
+
+        if (signUpError) {
+            toast.error("Registration not succeed...")
+        }
+        else {
+            redirect("/")
+        }
+
+
+    }
+    console.log(errors);
 
 
 
@@ -56,6 +81,11 @@ export default function RegisterPage() {
         <CardBody className="gap-4">
           <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
             <Label htmlFor="name">Full Name</Label>
+            {
+              errors.name && <p className="text-red-500 text-xs italic">
+                {errors.name.message}
+              </p>  
+            }
             <Input
               {...register("name", { required: "Name is required" })}
               id="name"
@@ -65,6 +95,11 @@ export default function RegisterPage() {
               className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
             />
             <Label htmlFor="email">Email Address</Label>
+             {
+              errors.email && <p className="text-red-500 text-xs italic">
+                {errors.email.message}
+              </p>  
+            }
             <Input
               {...register("email", { required: "Email is required" })}
               id="email"
@@ -74,17 +109,29 @@ export default function RegisterPage() {
               startContent={<FaEnvelope className="text-slate-400 text-sm" />}
               className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
             />
-            <Label htmlFor="image">Profile Image URL</Label>
-            <Input
-              {...register("image", { required: "Image is required" })}
-              id="image"
-              placeholder="https://example.com/avatar.jpg"
-              labelPlacement="outside"
-              startContent={<FaImage className="text-slate-400 text-sm" />}
-              className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
-            />
+             <Label htmlFor="image">Profile Image URL</Label>
+
+                        <Input
+                            {...register("image", { required: "image is Required" })}
+                            type="file"
+                            accept="image/*"
+                            id="image"
+                            placeholder="https://example.com/avatar.jpg"
+                            labelPlacement="outside"
+                            startContent={<FaImage className="text-slate-400 text-sm" />}
+                            className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
+                        />
+                        {
+                            errors.image && <p className="text-red-500">{errors.image.message}</p>
+                        }
+
 
             <Label htmlFor="password">Password</Label>
+             {
+              errors.password && <p className="text-red-500 text-xs italic">
+                {errors.password.message}
+              </p>  
+            }
             <Input
               {...register("password", {
                 required: "Password is required",
@@ -112,6 +159,11 @@ export default function RegisterPage() {
               >
                 Select Role
               </Label>
+               {
+              errors.role && <p className="text-red-500 text-xs italic">
+                {errors.role.message}
+              </p>  
+            }
               <select
                id="role"
                 {...register("role", { required: "Role is required" })}

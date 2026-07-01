@@ -7,9 +7,48 @@ import { Card, CardHeader, CardContent as CardBody, Input, Button, Label, Form }
 import { FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 
 import Logo from "@/components/Logo";
+import { useForm } from "react-hook-form";
+import { redirect } from "next/dist/server/api-utils";
+import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { uploadImage } from "@/utils/uploadImage";
 const LoginPage = () => {
+     const {
+        register,
+        handleSubmit,
+        watch,
+        formState: { errors },
+      } = useForm();
+
+       const onSubmit = async (data) => {
+              // Upload image to imgbb
+              console.log(data);
+      
+           
+              const { data: signInData, error: signInError } = await authClient.signIn.email({
+                  email: data.email,
+                  password: data.password,
+                 
+              })
+      
+              console.log(signInData, signInError);
+      
+              if (signInError) {
+                  toast.error("Registration not succeed...")
+              }
+              else {
+                  redirect('/')
+              }
+      
+      
+          }
+          console.log(errors);
+      
+      
+
     return (
-        <Card className="w-full max-w-md border border-white/5 bg-slate-950/70 backdrop-blur-xl shadow-2xl p-4">
+        <div className="mx-auto">
+             <Card className="w-full max-w-md border border-white/5 bg-slate-950/70 backdrop-blur-xl shadow-2xl p-4">
             <CardHeader className="flex flex-col gap-1 items-center pb-6 text-center">
                 <Logo />
                 <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-pink-500 bg-clip-text text-transparent">
@@ -20,11 +59,12 @@ const LoginPage = () => {
                 </p>
             </CardHeader>
             <CardBody className="gap-4">
-                <Form className="space-y-4 w-full">
+                <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
                     <Label htmlFor="email">
                         Email Address
                     </Label>
                     <Input
+                      {...register("email", { required: "Email is required" })}
                         id="email"
                         placeholder="john@example.com"
                         type="email"
@@ -36,6 +76,7 @@ const LoginPage = () => {
                         Password
                     </Label>
                     <Input
+                     {...register("password", { required: "Password is required" })}
                         id="password"
                         placeholder="••••••••"
                         type="password"
@@ -76,5 +117,8 @@ const LoginPage = () => {
                 </p>
             </CardBody>
         </Card>
-    )
-}
+        </div>
+    );
+};
+
+export default LoginPage;
